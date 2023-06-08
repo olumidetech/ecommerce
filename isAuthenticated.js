@@ -1,14 +1,22 @@
 const jwt = require("jsonwebtoken");
 
-export async function isAuthenticated(req, res, next) {
-    const token = req.headers["authorization"].split(" ")[1];
+async function isAuthenticated(req, res, next) {
+  const tokenHeader = req.headers["authorization"];
 
-    jwt.verify(token, "secret", (err, user) => {
-        if (err) {
-            return res.json({ message: err });
-        } else {
-            req.user = user;
-            next();
-        }
-    });
+  if (!tokenHeader || !tokenHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ message: "Invalid or missing authorization header" });
+  }
+
+  const token = tokenHeader.split(" ")[1];
+
+  jwt.verify(token, "secret", (err, user) => {
+    if (err) {
+      return res.json({ message: err });
+    } else {
+      req.user = user;
+      next();
+    }
+  });
 }
+
+module.exports = isAuthenticated;
